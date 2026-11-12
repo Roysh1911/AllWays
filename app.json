@@ -1,13 +1,27 @@
 {
   "expo": {
-    "name": "compass-app",
+    "name": "המצפן",
     "slug": "compass-app",
+    "scheme": "compass",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "app.compass.gift",
+      "infoPlist": {
+        "UIBackgroundModes": ["location", "remote-notification"],
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "he"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,6 +34,40 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true,
+          "forcesRTL": true
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "isIosBackgroundLocationEnabled": true,
+          "locationWhenInUsePermission": "המיקום שלך משמש כדי שהמצפן יצביע אל בן או בת הזוג שלך.",
+          "locationAlwaysAndWhenInUsePermission": "כדי שהמצפן אצל בן או בת הזוג יצביע אלייך גם כשהאפליקציה סגורה, צריך לאפשר מיקום \"תמיד\"."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sounds/heart.wav"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "כדי לצרף תמונה לסטטוס.",
+          "cameraPermission": "כדי לצלם תמונה לסטטוס."
+        }
+      ],
+      "expo-audio",
+      "expo-video",
+      "expo-updates"
+    ]
   }
 }

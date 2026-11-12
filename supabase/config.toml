@@ -1,0 +1,3 @@
+# Minimal Supabase CLI config. Only migrations are managed from this repo;
+# auth settings (anonymous sign-in on/off) are set in the dashboard.
+project_id = "compass-app"
