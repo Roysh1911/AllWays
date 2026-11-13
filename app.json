@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "המצפן",
-    "slug": "compass-app",
-    "scheme": "compass",
+    "name": "AllWays",
+    "slug": "allways",
+    "scheme": "allways",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,9 +16,12 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.compass.gift",
+      "bundleIdentifier": "app.allways.gift",
       "infoPlist": {
-        "UIBackgroundModes": ["location", "remote-notification"],
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification"
+        ],
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleDevelopmentRegion": "he"
       }
@@ -55,7 +58,9 @@
       [
         "expo-notifications",
         {
-          "sounds": ["./assets/sounds/heart.wav"]
+          "sounds": [
+            "./assets/sounds/heart.wav"
+          ]
         }
       ],
       [

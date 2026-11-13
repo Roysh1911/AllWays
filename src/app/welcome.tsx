@@ -27,7 +27,7 @@ export default function Welcome() {
   return (
     <Screen>
       <Text style={styles.title}>🧭</Text>
-      <Text style={styles.h1}>המצפן</Text>
+      <Text style={styles.h1}>AllWays</Text>
       <Text style={styles.p}>מצפן שתמיד מצביע אל האדם שלך, איפה שלא תהיו.</Text>
       <Text style={styles.label}>איך לקרוא לך?</Text>
       <TextInput

@@ -1,4 +1,4 @@
-# The Compass
+# AllWays
 
 A private two-person iPhone app: a compass whose needle always points to your partner,
 plus distance, local time and weather on both sides, "thinking of you" pings and a trail map.

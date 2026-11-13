@@ -41,7 +41,7 @@ export default function Permissions() {
       {denied ? (
         <>
           <Text style={styles.warn}>
-            בלי מיקום ״תמיד״ המצפן אצל הצד השני לא יתעדכן. אפשר לשנות בהגדרות ← המצפן ← מיקום ← תמיד.
+            בלי מיקום ״תמיד״ המצפן אצל הצד השני לא יתעדכן. אפשר לשנות בהגדרות ← AllWays ← מיקום ← תמיד.
           </Text>
           <Button title="פתיחת ההגדרות" onPress={() => Linking.openSettings()} />
           <Button title="בדיקה שוב" variant="secondary" onPress={allow} busy={busy} />
