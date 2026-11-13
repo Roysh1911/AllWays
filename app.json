@@ -73,6 +73,7 @@
       "expo-audio",
       "expo-video",
       "expo-updates"
-    ]
+    ],
+    "owner": "shukrun1911"
   }
 }
