@@ -23,6 +23,8 @@ concurrency:
 
 jobs:
   update:
+    # Off until the secrets exist: set repository variable OTA_ENABLED=true to enable.
+    if: vars.OTA_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -11,6 +11,8 @@ on:
 
 jobs:
   backup:
+    # Off until the secrets exist: set repository variable BACKUP_ENABLED=true to enable.
+    if: vars.BACKUP_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Dump (data only, public schema)
