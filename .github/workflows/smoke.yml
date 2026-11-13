@@ -1,0 +1,26 @@
+name: Supabase smoke test
+
+# Read-only checks from GitHub's network (Claude's workspace can't reach Supabase):
+# the project answers, anonymous sign-ins are on, and which tables exist.
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check project
+        run: |
+          URL=$(grep -oE "https://[a-z0-9]+\.supabase\.co" src/lib/config.ts | head -1)
+          KEY=$(grep -oE "sb_publishable_[A-Za-z0-9_-]+" src/lib/config.ts | head -1)
+          echo "Project: $URL"
+          SETTINGS=$(curl -sS "$URL/auth/v1/settings" -H "apikey: $KEY")
+          echo "$SETTINGS" | jq '{anonymous_users: .external.anonymous_users, disable_signup}'
+          test "$(echo "$SETTINGS" | jq -r '.external.anonymous_users')" = "true" \
+            && echo "OK: anonymous sign-ins are ON" || { echo "FAIL: anonymous sign-ins are OFF"; FAILED=1; }
+          for t in profiles locations pings statuses; do
+            CODE=$(curl -s -o /tmp/body -w "%{http_code}" "$URL/rest/v1/$t?select=id&limit=1" -H "apikey: $KEY")
+            echo "table $t: HTTP $CODE $(head -c 120 /tmp/body)"
+          done
+          exit ${FAILED:-0}
