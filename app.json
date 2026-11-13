@@ -12,7 +12,8 @@
     },
     "updates": {
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/783fb57b-2c58-4f41-a461-25dfaf750313"
     },
     "ios": {
       "supportsTablet": false,
@@ -74,6 +75,11 @@
       "expo-video",
       "expo-updates"
     ],
-    "owner": "shukrun1911"
+    "owner": "shukrun1911",
+    "extra": {
+      "eas": {
+        "projectId": "783fb57b-2c58-4f41-a461-25dfaf750313"
+      }
+    }
   }
 }
