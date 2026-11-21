@@ -77,3 +77,20 @@ export function formatDistance(m: number): string {
   const km = m / 1000;
   return km < 10 ? `${km.toFixed(1)} ק"מ` : `${Math.round(km).toLocaleString('he-IL')} ק"מ`;
 }
+
+/** Assumed accuracy when a fix doesn't report one (metres). */
+export const UNKNOWN_ACC_M = 65;
+/** Never call anything closer than this "far", whatever the reported accuracy. */
+export const NEARBY_FLOOR_M = 30;
+/** Above this combined uncertainty, "right next to you" would be a lie; show the needle instead. */
+export const NEARBY_MAX_M = 300;
+
+/**
+ * Are we so close that the direction is meaningless?
+ * True when the distance is inside the two fixes' combined uncertainty —
+ * the error circles overlap, so the needle could point anywhere.
+ */
+export function isNearby(distance: number, myAcc: number | null, partnerAcc: number | null): boolean {
+  const radius = Math.max(NEARBY_FLOOR_M, (myAcc ?? UNKNOWN_ACC_M) + (partnerAcc ?? UNKNOWN_ACC_M));
+  return radius <= NEARBY_MAX_M && distance <= radius;
+}
