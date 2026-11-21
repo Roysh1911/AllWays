@@ -174,3 +174,34 @@ test('fitWithin never upscales and keeps the longest side', async () => {
   assert.deepEqual(fitWithin(4032, 3024), { width: 1600 });
   assert.deepEqual(fitWithin(3024, 4032), { height: 1600 });
 });
+
+test('segments: solid runs and dashed jumps', async () => {
+  const { segments } = await import('../src/lib/trail.ts');
+  const a = { lat: 27.7, lng: 85.3 };
+  const b = { lat: 27.701, lng: 85.301 };
+  const c = { lat: 27.702, lng: 85.302 };
+  const far = { lat: 13.75, lng: 100.5 }; // Bangkok
+  const far2 = { lat: 13.751, lng: 100.501 };
+  const s = segments([a, b, c, far, far2]);
+  assert.equal(s.length, 3);
+  assert.deepEqual(s.map((x) => x.jump), [false, true, false]);
+  assert.deepEqual(s[1].points, [c, far]);
+  assert.equal(segments([a]).length, 0);
+});
+
+test('downsample keeps ends and the cap', async () => {
+  const { downsample } = await import('../src/lib/trail.ts');
+  const pts = Array.from({ length: 101 }, (_, i) => i);
+  const d = downsample(pts, 11);
+  assert.equal(d.length, 11);
+  assert.equal(d[0], 0);
+  assert.equal(d[10], 100);
+  assert.deepEqual(downsample([1, 2, 3], 10), [1, 2, 3]);
+});
+
+test('rangeStart', async () => {
+  const { rangeStart } = await import('../src/lib/trail.ts');
+  const now = Date.UTC(2026, 11, 10, 12);
+  assert.equal(rangeStart('day', now), '2026-12-09T12:00:00.000Z');
+  assert.equal(rangeStart('all', now), null);
+});
