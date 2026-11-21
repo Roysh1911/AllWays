@@ -58,7 +58,7 @@ jobs:
         run: |
           for id in $(jq -r '.[] | select(.status == "ERRORED") | .id' builds.json | head -3); do
             echo "::group::Build $id"
-            eas build:view "$id" --json --non-interactive > view.json || true
+            eas build:view "$id" --json > view.json || true
             jq -r '"error: \(.error.errorCode // "-") \(.error.message // "-")"' view.json || true
             for url in $(jq -r '(.logFiles // [])[]' view.json); do
               curl -sL "$url" -o log.txt || continue
