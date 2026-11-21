@@ -8,7 +8,7 @@ import {
   padding,
 } from '@expo/ui/swift-ui/modifiers';
 import { createWidget, type WidgetEnvironment } from 'expo-widgets';
-import { EMPTY_WIDGET, type PartnerWidgetProps } from '../lib/widgetProps';
+import { EMPTY_WIDGET, plistSafe, type PartnerWidgetProps } from '../lib/widgetProps';
 
 // Runs in the widget's isolated runtime: no hooks, no imports at call time,
 // so every constant lives inside the function. Colours mirror theme.ts.
@@ -21,21 +21,19 @@ const PartnerWidget = (props: PartnerWidgetProps, env: WidgetEnvironment) => {
   const card = '#FBF7F2';
   const lockScreen = env.widgetFamily === 'accessoryRectangular';
 
-  const headline = props.distance === null ? '' : props.nearby ? 'ממש לידך' : props.distance;
-  const status = props.paused
-    ? 'השיתוף מושהה'
-    : props.distance === null
-      ? 'עוד לא התקבל מיקום'
-      : props.place;
+  const hasDistance = !!props.distance;
+  const hasUpdate = !!props.updatedAt && props.updatedAt > 0;
+  const headline = !hasDistance ? '' : props.nearby ? 'ממש לידך' : props.distance;
+  const status = props.paused ? 'השיתוף מושהה' : !hasDistance ? 'עוד לא התקבל מיקום' : props.place || '';
 
   if (lockScreen) {
     return (
       <VStack alignment="leading" spacing={1}>
-        <Text modifiers={[font({ textStyle: 'headline' }), lineLimit(1)]}>{`❤️ ${props.name}`}</Text>
+        <Text modifiers={[font({ textStyle: 'headline' }), lineLimit(1)]}>{`❤️ ${props.name || ''}`}</Text>
         <Text modifiers={[font({ size: 17, weight: 'bold' }), lineLimit(1), minimumScaleFactor(0.6)]}>
           {headline || status || ''}
         </Text>
-        {props.updatedAt !== null && !props.paused && (
+        {hasUpdate && !props.paused && (
           <Text modifiers={[font({ textStyle: 'caption2' }), lineLimit(1)]}>
             <Text>{'לפני '}</Text>
             <Text date={new Date(props.updatedAt)} dateStyle="relative" />
@@ -54,7 +52,7 @@ const PartnerWidget = (props: PartnerWidgetProps, env: WidgetEnvironment) => {
       <HStack spacing={4}>
         <Text modifiers={[font({ size: 15 })]}>❤️</Text>
         <Text modifiers={[font({ size: 15, weight: 'semibold' }), foregroundStyle(accent), lineLimit(1)]}>
-          {props.name}
+          {props.name || ''}
         </Text>
       </HStack>
       <Spacer />
@@ -73,7 +71,7 @@ const PartnerWidget = (props: PartnerWidgetProps, env: WidgetEnvironment) => {
       {status ? (
         <Text modifiers={[font({ textStyle: 'caption' }), foregroundStyle(ink), lineLimit(1)]}>{status}</Text>
       ) : null}
-      {props.updatedAt !== null && !props.paused && (
+      {hasUpdate && !props.paused && (
         <Text modifiers={[font({ textStyle: 'caption2' }), foregroundStyle(muted), lineLimit(1)]}>
           <Text>{'עודכן לפני '}</Text>
           <Text date={new Date(props.updatedAt)} dateStyle="relative" />
@@ -83,4 +81,4 @@ const PartnerWidget = (props: PartnerWidgetProps, env: WidgetEnvironment) => {
   );
 };
 
-export default createWidget('PartnerWidget', PartnerWidget, EMPTY_WIDGET);
+export default createWidget('PartnerWidget', PartnerWidget, plistSafe(EMPTY_WIDGET));

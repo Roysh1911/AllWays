@@ -148,7 +148,7 @@ test('widgetProps: nearby and missing data', async () => {
   });
   assert.equal(near.nearby, true);
   const empty = widgetProps({ partnerName: null, paused: true, me: null, partner: null, partnerLastSeen: null });
-  assert.deepEqual(empty, { name: '', distance: null, nearby: false, place: null, updatedAt: null, paused: true });
+  assert.deepEqual(empty, { name: '', distance: '', nearby: false, place: '', updatedAt: 0, paused: true });
 });
 
 test('statusLine combines preset, text and photo fallback', async () => {
@@ -204,4 +204,23 @@ test('rangeStart', async () => {
   const now = Date.UTC(2026, 11, 10, 12);
   assert.equal(rangeStart('day', now), '2026-12-09T12:00:00.000Z');
   assert.equal(rangeStart('all', now), null);
+});
+
+test('widget props never contain null (UserDefaults crashes on NSNull)', async () => {
+  const { widgetProps, plistSafe, EMPTY_WIDGET } = await import('../src/lib/widgetProps.ts');
+  const noNull = (o: Record<string, unknown>) => Object.values(o).every((v) => v !== null && v !== undefined);
+  assert.ok(noNull(EMPTY_WIDGET));
+  assert.ok(noNull(widgetProps({ partnerName: null, paused: false, me: null, partner: null, partnerLastSeen: null })));
+  assert.ok(
+    noNull(
+      widgetProps({
+        partnerName: 'נועה',
+        paused: false,
+        me: telAviv,
+        partner: { ...kathmandu, acc: null, ts: 'not a date', place: null },
+        partnerLastSeen: null,
+      }),
+    ),
+  );
+  assert.deepEqual(plistSafe({ a: 1, b: null, c: undefined, d: NaN, e: '' } as Record<string, unknown>), { a: 1, e: '' });
 });
