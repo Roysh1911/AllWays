@@ -52,5 +52,4 @@ jobs:
         run: |
           eas build:list --platform ios --limit 6 --json --non-interactive > builds.json
           echo "created | profile | channel | runtime | status | message"
-          jq -r '.[] | [.createdAt[0:16], .buildProfile, (.channel // "-"), (.runtimeVersion // "-"), .status, (.message // "-")] | join(" | ")' builds.json
-          echo "fields: $(jq -r '.[0] | keys | join(",")' builds.json)"
+          jq -r '.[] | [.createdAt[0:16], .buildProfile, (.updateChannel // "-"), ((.runtime | objects | .version) // (.runtime | strings) // "-"), .status, (.message // "-")] | join(" | ")' builds.json
