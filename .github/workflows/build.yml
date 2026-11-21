@@ -1,8 +1,8 @@
 name: iOS build
 
-# Manual only. Starts a native build on EAS and lists the runtime version of
-# recent builds, so you can see whether an OTA update will reach each phone:
-# an update only lands on builds whose runtime version matches the code.
+# Manual only. Starts a native build on EAS and lists recent builds with their
+# runtime version (native-1, native-2, ...). An OTA update only reaches builds
+# whose runtime version matches app.json.
 on:
   workflow_dispatch:
     inputs:
@@ -34,20 +34,23 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Runtime version still matches the native layer
+        run: node scripts/check-runtime.mjs
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-      - name: Runtime version of the current code
-        run: |
-          npx expo-updates fingerprint:generate --platform ios | jq -r '"Code runtime version: \(.hash)"'
       - name: Start build
         if: ${{ github.event.inputs.list_only != 'true' }}
         # Inputs pass through env, never interpolated into the script.
         env:
           PROFILE: ${{ github.event.inputs.profile }}
-        run: eas build --profile "$PROFILE" --platform ios --non-interactive --no-wait
-      - name: Recent builds (runtime version must match the code for OTA to land)
         run: |
-          eas build:list --platform ios --limit 6 --json --non-interactive \
-            | jq -r '.[] | [.createdAt, .buildProfile, (.channel // "-"), (.runtimeVersion // "-"), .status] | @tsv'
+          RUNTIME=$(jq -r .expo.runtimeVersion app.json)
+          eas build --profile "$PROFILE" --platform ios --non-interactive --no-wait --message "$RUNTIME · $PROFILE"
+      - name: Recent builds
+        run: |
+          eas build:list --platform ios --limit 6 --json --non-interactive > builds.json
+          echo "created | profile | channel | runtime | status | message"
+          jq -r '.[] | [.createdAt[0:16], .buildProfile, (.channel // "-"), (.runtimeVersion // "-"), .status, (.message // "-")] | join(" | ")' builds.json
+          echo "fields: $(jq -r '.[0] | keys | join(",")' builds.json)"

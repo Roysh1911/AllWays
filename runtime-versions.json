@@ -1,0 +1,10 @@
+{
+  "_readme": "One entry per native build generation. An OTA update only reaches phones whose build has the same runtime version. If scripts/check-runtime.mjs fails, the native layer changed: bump expo.runtimeVersion in app.json to the next native-N, add it here with the new fingerprint, and build BOTH phones (preview and production).",
+  "versions": {
+    "native-1": {
+      "fingerprint": "8c1d0bfdba5c3065f9b8a9ac140cff674e0875fd",
+      "since": "2026-11-21",
+      "notes": "First named runtime. Native freeze build: Expo SDK 58, background location, geofence, push, haptics, plus v2 modules (camera, files, audio, video)."
+    }
+  }
+}
