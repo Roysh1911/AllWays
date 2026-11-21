@@ -52,4 +52,5 @@ jobs:
         run: |
           eas build:list --platform ios --limit 6 --json --non-interactive > builds.json
           echo "created | profile | channel | runtime | status | message"
-          jq -r '.[] | [.createdAt[0:16], .buildProfile, (.updateChannel // "-"), ((.runtime | objects | .version) // (.runtime | strings) // "-"), .status, (.message // "-")] | join(" | ")' builds.json
+          jq -r 'def s: if type == "object" then (.name // .version // .runtimeVersion // tojson) elif . == null then "-" else tostring end;
+                 .[] | [.createdAt[0:16], .buildProfile, (.updateChannel | s), (.runtime | s), .status, (.message | s)] | join(" | ")' builds.json
