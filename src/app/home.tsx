@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Compass } from '../components/Compass';
@@ -114,6 +115,13 @@ export default function Home() {
           <Text style={styles.distance}>{formatDistance(distance)}</Text>
         ))}
 
+      {partnerLocation && (
+        <Pressable onPress={() => router.push('/map')} style={styles.mapLink}>
+          <Text style={styles.mapLinkText}>🗺️ המסלול של {partnerName}</Text>
+          <Text style={styles.mapLinkArrow}>›</Text>
+        </Pressable>
+      )}
+
       <StatusCard partnerName={partnerName} theirs={statuses.theirs} mine={statuses.mine} now={now} />
 
       <View style={styles.row}>
@@ -153,6 +161,17 @@ const styles = StyleSheet.create({
   distance: { fontSize: 32, fontWeight: '800', color: colors.ink, textAlign: 'center' },
   nearby: { alignItems: 'center', gap: 2 },
   row: { flexDirection: 'row', gap: 12 },
+  mapLink: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: radius,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  mapLinkText: { fontSize: 16, fontWeight: '700', color: colors.ink },
+  mapLinkArrow: { fontSize: 20, color: colors.accent },
   ping: {
     backgroundColor: colors.accent,
     borderRadius: radius,
