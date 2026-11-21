@@ -150,3 +150,27 @@ test('widgetProps: nearby and missing data', async () => {
   const empty = widgetProps({ partnerName: null, paused: true, me: null, partner: null, partnerLastSeen: null });
   assert.deepEqual(empty, { name: '', distance: null, nearby: false, place: null, updatedAt: null, paused: true });
 });
+
+test('statusLine combines preset, text and photo fallback', async () => {
+  const { statusLine, presetLabel } = await import('../src/lib/statusFormat.ts');
+  assert.equal(presetLabel('landed'), 'נחתתי ✈️');
+  assert.equal(presetLabel('nope'), null);
+  assert.equal(statusLine({ preset: 'landed', text: ' הכול בסדר ', photo_path: null }), 'נחתתי ✈️ · הכול בסדר');
+  assert.equal(statusLine({ preset: null, text: '', photo_path: 'u/1.jpg' }), '📷 תמונה');
+  assert.equal(statusLine({ preset: 'unknown', text: null, photo_path: null }), '');
+});
+
+test('canPost needs preset, text or photo', async () => {
+  const { canPost } = await import('../src/lib/statusFormat.ts');
+  assert.equal(canPost({ text: '   ', preset: null, hasPhoto: false }), false);
+  assert.equal(canPost({ text: 'היי', preset: null, hasPhoto: false }), true);
+  assert.equal(canPost({ text: '', preset: 'hiking', hasPhoto: false }), true);
+  assert.equal(canPost({ text: '', preset: null, hasPhoto: true }), true);
+});
+
+test('fitWithin never upscales and keeps the longest side', async () => {
+  const { fitWithin } = await import('../src/lib/statusFormat.ts');
+  assert.equal(fitWithin(1200, 900), null);
+  assert.deepEqual(fitWithin(4032, 3024), { width: 1600 });
+  assert.deepEqual(fitWithin(3024, 4032), { height: 1600 });
+});

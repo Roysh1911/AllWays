@@ -3,11 +3,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Compass } from '../components/Compass';
 import { Screen } from '../components/Screen';
+import { StatusCard } from '../components/StatusCard';
 import { colors, radius } from '../components/theme';
 import { WeatherCard } from '../components/WeatherCard';
 import { useHeading } from '../hooks/useHeading';
 import { useMyPosition } from '../hooks/useMyPosition';
 import { usePartner } from '../hooks/usePartner';
+import { useStatuses } from '../hooks/useStatuses';
 import { ensureTracking, stopTracking } from '../lib/backgroundTasks';
 import { STALE_AFTER_MS } from '../lib/config';
 import { timeAgo } from '../lib/format';
@@ -24,6 +26,7 @@ export default function Home() {
   const { me, partner, partnerLocation, pings, refresh } = usePartner(onPing);
   const heading = useHeading();
   const myPos = useMyPosition();
+  const statuses = useStatuses(me?.id ?? null, partner?.id ?? null);
   const [now, setNow] = useState(() => Date.now());
   const [sending, setSending] = useState(false);
 
@@ -110,6 +113,8 @@ export default function Home() {
         ) : (
           <Text style={styles.distance}>{formatDistance(distance)}</Text>
         ))}
+
+      <StatusCard partnerName={partnerName} theirs={statuses.theirs} mine={statuses.mine} now={now} />
 
       <View style={styles.row}>
         <WeatherCard title="אצלך" at={myPos} />
