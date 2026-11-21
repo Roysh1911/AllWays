@@ -18,6 +18,7 @@ import { bearingDeg, distanceM, formatDistance, isNearby } from '../lib/geo';
 import { sendPing } from '../lib/pings';
 import { setPausedLocal } from '../lib/points';
 import { updateMyProfile } from '../lib/supabase';
+import { versionLine } from '../lib/version';
 import { pushWidget } from '../lib/widget';
 
 export default function Home() {
@@ -148,6 +149,7 @@ export default function Home() {
           trackColor={{ true: colors.accent, false: colors.line }}
         />
       </View>
+      <Text style={styles.version}>{versionLine()}</Text>
     </Screen>
   );
 }
@@ -157,6 +159,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 28, fontWeight: '800', color: colors.ink },
   sub: { fontSize: 17, color: colors.ink },
   small: { fontSize: 14, color: colors.muted, textAlign: 'center' },
+  version: { fontSize: 11, color: colors.muted, textAlign: 'center', opacity: 0.7 },
   compass: { alignItems: 'center', gap: 8 },
   distance: { fontSize: 32, fontWeight: '800', color: colors.ink, textAlign: 'center' },
   nearby: { alignItems: 'center', gap: 2 },
