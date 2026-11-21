@@ -35,6 +35,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Runtime version still matches the native layer (blocks unsafe updates)
+        run: node scripts/check-runtime.mjs
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
