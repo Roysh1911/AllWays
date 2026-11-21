@@ -54,3 +54,15 @@ jobs:
           echo "created | profile | channel | runtime | status | message"
           jq -r 'def s: if type == "object" then (.name // .version // .runtimeVersion // tojson) elif . == null then "-" else tostring end;
                  .[] | [.createdAt[0:16], .buildProfile, (.updateChannel | s), (.runtime | s), .status, (.message | s)] | join(" | ")' builds.json
+      - name: Why recent builds failed
+        run: |
+          for id in $(jq -r '.[] | select(.status == "ERRORED") | .id' builds.json | head -3); do
+            echo "::group::Build $id"
+            eas build:view "$id" --json --non-interactive > view.json || true
+            jq -r '"error: \(.error.errorCode // "-") \(.error.message // "-")"' view.json || true
+            for url in $(jq -r '(.logFiles // [])[]' view.json); do
+              curl -sL "$url" -o log.txt || continue
+              grep -a -i -E "error|failed|❌" log.txt | grep -a -v -i "warning" | tail -40 || true
+            done
+            echo "::endgroup::"
+          done
