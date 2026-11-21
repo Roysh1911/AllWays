@@ -6,6 +6,7 @@ import {
   coarse,
   distanceM,
   formatDistance,
+  isNearby,
   needleRotation,
   norm180,
   shouldStore,
@@ -96,4 +97,26 @@ test('weatherLabel covers common codes', () => {
   assert.equal(weatherLabel(0).label, 'בהיר');
   assert.equal(weatherLabel(63).label, 'גשם');
   assert.equal(weatherLabel(95).label, 'סופה');
+});
+
+test('isNearby: the bug case — 16 m apart, 58 m accuracy', () => {
+  assert.equal(isNearby(16, 58, 6), true);
+});
+
+test('isNearby: far apart with good fixes', () => {
+  assert.equal(isNearby(1000, 10, 10), false);
+  assert.equal(isNearby(65, 30, 30), false);
+});
+
+test('isNearby: unknown accuracy uses a safe default', () => {
+  assert.equal(isNearby(100, null, null), true); // 65 + 65 = 130
+  assert.equal(isNearby(200, null, null), false);
+});
+
+test('isNearby: never "next to you" when the fixes are hopeless', () => {
+  assert.equal(isNearby(250, 200, 200), false); // 400 m uncertainty > cap
+});
+
+test('isNearby: floor for very precise fixes', () => {
+  assert.equal(isNearby(20, 3, 3), true); // floor 30 m
 });

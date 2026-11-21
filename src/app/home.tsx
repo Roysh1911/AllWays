@@ -11,7 +11,7 @@ import { usePartner } from '../hooks/usePartner';
 import { ensureTracking, stopTracking } from '../lib/backgroundTasks';
 import { STALE_AFTER_MS } from '../lib/config';
 import { timeAgo } from '../lib/format';
-import { bearingDeg, distanceM, formatDistance } from '../lib/geo';
+import { bearingDeg, distanceM, formatDistance, isNearby } from '../lib/geo';
 import { sendPing } from '../lib/pings';
 import { setPausedLocal } from '../lib/points';
 import { updateMyProfile } from '../lib/supabase';
@@ -42,7 +42,8 @@ export default function Home() {
   const stale = !lastUpdate || now - lastUpdate > STALE_AFTER_MS || !!partner?.sharing_paused;
   const bearing = myPos && partnerPos ? bearingDeg(myPos, partnerPos) : null;
   const distance = myPos && partnerPos ? distanceM(myPos, partnerPos) : null;
-  const lowAccuracy = heading !== null && heading.accuracy <= 1;
+  const nearby = distance !== null && isNearby(distance, myPos?.acc ?? null, partnerLocation?.acc ?? null);
+  const lowAccuracy = heading !== null && heading.accuracy <= 1 && !nearby;
 
   async function ping() {
     if (!me || !partner || sending) return;
@@ -83,12 +84,20 @@ export default function Home() {
       </View>
 
       <View style={styles.compass}>
-        <Compass heading={heading?.degrees ?? null} bearing={bearing} stale={stale} />
+        <Compass heading={heading?.degrees ?? null} bearing={bearing} stale={stale} nearby={nearby} />
         {lowAccuracy && <Text style={styles.small}>דיוק נמוך: הזז/י את הטלפון בצורת 8 כדי לכייל</Text>}
         {heading === null && <Text style={styles.small}>אין חיישן כיוון זמין. המחוג מכוון לצפון.</Text>}
       </View>
 
-      {distance !== null && <Text style={styles.distance}>{formatDistance(distance)}</Text>}
+      {distance !== null &&
+        (nearby ? (
+          <View style={styles.nearby}>
+            <Text style={styles.distance}>ממש לידך</Text>
+            <Text style={styles.small}>קרובים מכדי שהמצפן יידע לאן להצביע</Text>
+          </View>
+        ) : (
+          <Text style={styles.distance}>{formatDistance(distance)}</Text>
+        ))}
 
       <View style={styles.row}>
         <WeatherCard title="אצלך" at={myPos} />
@@ -125,6 +134,7 @@ const styles = StyleSheet.create({
   small: { fontSize: 14, color: colors.muted, textAlign: 'center' },
   compass: { alignItems: 'center', gap: 8 },
   distance: { fontSize: 32, fontWeight: '800', color: colors.ink, textAlign: 'center' },
+  nearby: { alignItems: 'center', gap: 2 },
   row: { flexDirection: 'row', gap: 12 },
   ping: {
     backgroundColor: colors.accent,
