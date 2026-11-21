@@ -39,7 +39,8 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       - name: Runtime version of the current code
-        run: npx expo-updates fingerprint:generate --platform ios | jq -r '"Code runtime version: \(.hash)"'
+        run: |
+          npx expo-updates fingerprint:generate --platform ios | jq -r '"Code runtime version: \(.hash)"'
       - name: Start build
         if: ${{ github.event.inputs.list_only != 'true' }}
         # Inputs pass through env, never interpolated into the script.
