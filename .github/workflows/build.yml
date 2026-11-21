@@ -17,6 +17,11 @@ on:
         required: false
         default: false
         type: boolean
+      delete_ids:
+        description: 'Build IDs to delete, separated by spaces (implies list_only). Permanent.'
+        required: false
+        default: ''
+        type: string
 
 concurrency:
   group: build-${{ github.event.inputs.profile }}
@@ -41,19 +46,29 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       - name: Start build
-        if: ${{ github.event.inputs.list_only != 'true' }}
+        if: ${{ github.event.inputs.list_only != 'true' && github.event.inputs.delete_ids == '' }}
         # Inputs pass through env, never interpolated into the script.
         env:
           PROFILE: ${{ github.event.inputs.profile }}
         run: |
           RUNTIME=$(jq -r .expo.runtimeVersion app.json)
           eas build --profile "$PROFILE" --platform ios --non-interactive --no-wait --message "$RUNTIME · $PROFILE"
+      - name: Delete builds
+        if: ${{ github.event.inputs.delete_ids != '' }}
+        env:
+          IDS: ${{ github.event.inputs.delete_ids }}
+        run: |
+          for id in $IDS; do
+            [[ "$id" =~ ^[0-9a-f-]{36}$ ]] || { echo "skip invalid id: $id"; continue; }
+            echo "deleting $id"
+            eas build:delete "$id" --non-interactive
+          done
       - name: Recent builds
         run: |
-          eas build:list --platform ios --limit 6 --json --non-interactive > builds.json
-          echo "created | profile | channel | runtime | status | message"
+          eas build:list --platform ios --limit 15 --json --non-interactive > builds.json
+          echo "created | profile | channel | runtime | status | message | id"
           jq -r 'def s: if type == "object" then (.name // .version // .runtimeVersion // tojson) elif . == null then "-" else tostring end;
-                 .[] | [.createdAt[0:16], .buildProfile, (.updateChannel | s), (.runtime | s), .status, (.message | s)] | join(" | ")' builds.json
+                 .[] | [.createdAt[0:16], .buildProfile, (.updateChannel | s), (.runtime | s), .status, (.message | s), .id] | join(" | ")' builds.json
       - name: Why recent builds failed
         run: |
           for id in $(jq -r '.[] | select(.status == "ERRORED") | .id' builds.json | head -3); do
