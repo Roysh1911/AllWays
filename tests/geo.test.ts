@@ -120,3 +120,33 @@ test('isNearby: never "next to you" when the fixes are hopeless', () => {
 test('isNearby: floor for very precise fixes', () => {
   assert.equal(isNearby(20, 3, 3), true); // floor 30 m
 });
+
+test('widgetProps: far apart', async () => {
+  const { widgetProps } = await import('../src/lib/widgetProps.ts');
+  const p = widgetProps({
+    partnerName: 'נועה',
+    paused: false,
+    me: telAviv,
+    partner: { ...kathmandu, acc: 20, ts: '2026-12-10T10:00:00Z', place: 'קטמנדו' },
+    partnerLastSeen: '2026-12-10T11:00:00Z',
+  });
+  assert.equal(p.name, 'נועה');
+  assert.equal(p.nearby, false);
+  assert.match(p.distance ?? '', /ק"מ$/);
+  assert.equal(p.place, 'קטמנדו');
+  assert.equal(p.updatedAt, Date.parse('2026-12-10T11:00:00Z')); // later of point and heartbeat
+});
+
+test('widgetProps: nearby and missing data', async () => {
+  const { widgetProps } = await import('../src/lib/widgetProps.ts');
+  const near = widgetProps({
+    partnerName: 'נועה',
+    paused: false,
+    me: { ...telAviv, acc: 10 },
+    partner: { lat: telAviv.lat + 0.0001, lng: telAviv.lng, acc: 10, ts: '2026-12-10T10:00:00Z', place: null },
+    partnerLastSeen: null,
+  });
+  assert.equal(near.nearby, true);
+  const empty = widgetProps({ partnerName: null, paused: true, me: null, partner: null, partnerLastSeen: null });
+  assert.deepEqual(empty, { name: '', distance: null, nearby: false, place: null, updatedAt: null, paused: true });
+});

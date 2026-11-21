@@ -15,6 +15,7 @@ import { bearingDeg, distanceM, formatDistance, isNearby } from '../lib/geo';
 import { sendPing } from '../lib/pings';
 import { setPausedLocal } from '../lib/points';
 import { updateMyProfile } from '../lib/supabase';
+import { pushWidget } from '../lib/widget';
 
 export default function Home() {
   const onPing = useCallback(() => {
@@ -44,6 +45,17 @@ export default function Home() {
   const distance = myPos && partnerPos ? distanceM(myPos, partnerPos) : null;
   const nearby = distance !== null && isNearby(distance, myPos?.acc ?? null, partnerLocation?.acc ?? null);
   const lowAccuracy = heading !== null && heading.accuracy <= 1 && !nearby;
+
+  // Keep the home-screen widget in step with what this screen shows.
+  useEffect(() => {
+    pushWidget({
+      partnerName: partner?.name ?? null,
+      paused: !!partner?.sharing_paused,
+      me: myPos,
+      partner: partnerLocation,
+      partnerLastSeen: partner?.last_seen ?? null,
+    });
+  }, [partner, partnerLocation, myPos]);
 
   async function ping() {
     if (!me || !partner || sending) return;
