@@ -65,7 +65,8 @@ function expect(name, ok, detail = '') {
 
 // --- setup: A and B pair, C is a stranger ---
 for (const [u, n] of [[A, 'Roy'], [B, 'Noa'], [C, 'Eve']]) {
-  const r = await as(u, `insert into public.profiles (id, name) values ($1, $2)`, [u, n]);
+  // Same statement PostgREST sends for supabase.from('profiles').upsert({ id, name })
+  const r = await as(u, `insert into public.profiles (id, name) values ($1, $2) on conflict (id) do update set id = excluded.id, name = excluded.name`, [u, n]);
   expect(`${n} creates own profile`, !r.error, r.error);
 }
 const code = (await as(A, `select public.create_pair_code() as c`)).rows[0].c;
@@ -78,6 +79,12 @@ expect('C cannot reuse the consumed code', !!reuse.error, 'no error');
 // --- profiles ---
 let r = await as(C, `insert into public.profiles (id, name) values ($1, 'fake')`, [A]);
 expect('C cannot create a profile for A', !!r.error, 'inserted');
+r = await as(A, `insert into public.profiles (id, name) values ($1, 'Roy 2') on conflict (id) do update set id = excluded.id, name = excluded.name returning name`, [A]);
+expect('A can upsert own profile again (rename)', r.rows?.[0]?.name === 'Roy 2', JSON.stringify(r));
+r = await as(C, `insert into public.profiles (id, name) values ($1, 'hacked') on conflict (id) do update set id = excluded.id, name = excluded.name`, [A]);
+expect("C cannot upsert over A's profile", !!r.error, 'updated');
+r = await as(A, `update public.profiles set id = $1 where id = $2`, [C, A]);
+expect('A cannot change own id to another user', !!r.error, JSON.stringify(r));
 r = await as(C, `select id from public.profiles`);
 expect('C sees only own profile', r.rows?.length === 1 && r.rows[0].id === C, JSON.stringify(r));
 r = await as(B, `select id from public.profiles order by name`);
