@@ -1,0 +1,52 @@
+name: iOS build
+
+# Manual only. Starts a native build on EAS and lists the runtime version of
+# recent builds, so you can see whether an OTA update will reach each phone:
+# an update only lands on builds whose runtime version matches the code.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Build profile (production = her phone, preview = yours)'
+        required: true
+        default: production
+        type: choice
+        options: [production, preview]
+      list_only:
+        description: 'Only list recent builds, do not start a new one'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: build-${{ github.event.inputs.profile }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Runtime version of the current code
+        run: npx expo-updates fingerprint:generate --platform ios | jq -r '"Code runtime version: \(.hash)"'
+      - name: Start build
+        if: ${{ github.event.inputs.list_only != 'true' }}
+        # Inputs pass through env, never interpolated into the script.
+        env:
+          PROFILE: ${{ github.event.inputs.profile }}
+        run: eas build --profile "$PROFILE" --platform ios --non-interactive --no-wait
+      - name: Recent builds (runtime version must match the code for OTA to land)
+        run: |
+          eas build:list --platform ios --limit 6 --json --non-interactive \
+            | jq -r '.[] | [.createdAt, .buildProfile, (.channel // "-"), (.runtimeVersion // "-"), .status] | @tsv'
