@@ -5,6 +5,11 @@
       "fingerprint": "8c1d0bfdba5c3065f9b8a9ac140cff674e0875fd",
       "since": "2026-11-21",
       "notes": "First named runtime. Native freeze build: Expo SDK 58, background location, geofence, push, haptics, plus v2 modules (camera, files, audio, video)."
+    },
+    "native-2": {
+      "fingerprint": "1b2ab44868d44ca69caa0ec45e4f48ba2fedf3e0",
+      "since": "2026-11-21",
+      "notes": "native-1 plus the home-screen and lock-screen widget (expo-widgets, @expo/ui; extension app.allways.gift.widgets, App Group group.app.allways.gift). Widget layout ships in the JS bundle, so it can change by OTA."
     }
   }
 }

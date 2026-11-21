@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "runtimeVersion": "native-1",
+    "runtimeVersion": "native-2",
     "updates": {
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0,
@@ -71,7 +71,28 @@
       ],
       "expo-audio",
       "expo-video",
-      "expo-updates"
+      "expo-updates",
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "app.allways.gift.widgets",
+          "groupIdentifier": "group.app.allways.gift",
+          "widgets": [
+            {
+              "name": "PartnerWidget",
+              "displayName": "AllWays",
+              "description": "כמה רחוק ומתי עודכן",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium",
+                  "accessoryRectangular"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     ],
     "owner": "shukrun1911",
     "extra": {

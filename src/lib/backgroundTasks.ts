@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { FENCE_RADIUS_M } from './config';
 import { lastStoredPoint, recordFixes } from './points';
+import { refreshWidgetFromServer } from './widget';
 
 export const LOCATION_TASK = 'compass-location';
 export const FENCE_TASK = 'compass-fence';
@@ -17,6 +18,7 @@ TaskManager.defineTask<LocationTaskData>(LOCATION_TASK, async ({ data, error }) 
   if (error || !data?.locations?.length) return;
   await recordFixes(data.locations, 'track');
   await recenterFence();
+  await refreshWidgetFromServer();
 });
 
 TaskManager.defineTask<FenceTaskData>(FENCE_TASK, async ({ data, error }) => {
@@ -28,6 +30,7 @@ TaskManager.defineTask<FenceTaskData>(FENCE_TASK, async ({ data, error }) => {
   if (fix) await recordFixes([fix], 'fence', true);
   await recenterFence();
   await ensureTracking();
+  await refreshWidgetFromServer();
 });
 
 /** Move the safety-net circle to the latest stored point. */
