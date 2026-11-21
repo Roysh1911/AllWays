@@ -4,14 +4,14 @@ import { Platform } from 'react-native';
 import PartnerWidget from '../widgets/PartnerWidget';
 import { lastStoredPoint } from './points';
 import { getMyProfile, getProfile, latestLocation } from './supabase';
-import { widgetKey, widgetProps, type PartnerWidgetProps, type WidgetInput } from './widgetProps';
+import { plistSafe, widgetKey, widgetProps, type PartnerWidgetProps, type WidgetInput } from './widgetProps';
 
 let lastKey: string | null = null;
 
 export function pushWidget(input: WidgetInput): void {
   if (Platform.OS !== 'ios') return;
   try {
-    const props: PartnerWidgetProps = widgetProps(input);
+    const props: PartnerWidgetProps = plistSafe(widgetProps(input));
     const key = widgetKey(props);
     if (key === lastKey) return;
     PartnerWidget.updateSnapshot(props);
