@@ -1,0 +1,44 @@
+name: Diagnostics (no coordinates)
+
+# Read-only health check of stored locations. Prints names, times, accuracy,
+# source and the distance between the two latest points: never raw coordinates.
+on:
+  workflow_dispatch:
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+      - name: Query
+        run: |
+          sudo apt-get -qq install -y postgresql-client >/dev/null
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD"
+          URL=$(cat supabase/.temp/pooler-url)
+          psql "$URL" -v ON_ERROR_STOP=1 -P pager=off <<'SQL'
+          \echo '== points per user =='
+          select p.name, count(l.*) as points, max(l.ts) as last_point,
+                 round(avg(l.acc)) as avg_acc_m, p.last_seen, p.sharing_paused
+          from public.profiles p left join public.locations l on l.user_id = p.id
+          group by p.id order by p.name;
+          \echo '== last 8 points (no coordinates) =='
+          select p.name, l.ts, round(l.acc) as acc_m, l.source, l.place, round(l.battery*100) as batt
+          from public.locations l join public.profiles p on p.id = l.user_id
+          order by l.ts desc limit 8;
+          \echo '== distance between latest points =='
+          with last as (
+            select distinct on (user_id) user_id, lat, lng, ts, acc
+            from public.locations order by user_id, ts desc)
+          select round(2*6371008.8*asin(sqrt(
+                   power(sin(radians(b.lat-a.lat)/2),2) +
+                   cos(radians(a.lat))*cos(radians(b.lat))*power(sin(radians(b.lng-a.lng)/2),2)))) as distance_m,
+                 round(a.acc) as acc_a_m, round(b.acc) as acc_b_m, a.ts as ts_a, b.ts as ts_b
+          from last a join last b on a.user_id < b.user_id;
+          SQL
